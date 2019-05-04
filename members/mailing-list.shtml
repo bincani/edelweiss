@@ -1,0 +1,17 @@
+<html>
+<head><title>Edelweiss Email List</title></head>
+<body>
+<h2>Edelweiss Email List</h2>
+There is a mailing list for keeping everyone up to date. 
+The advantages of a mailing list :
+<ul>
+  <li>Send an email to one address, and everyone on the list gets it.</li>
+  <li>Members can add/remove their own email address.</li>
+</ul>
+<ul><li><a href="/mailman/listinfo/ski_arrowsreach.com/">Mailing List Page</a></li></ul>
+<hr>
+
+<!--#include virtual="/mailman/listinfo/ski_arrowsreach.com/" -->
+
+</body>
+</html>

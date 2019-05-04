@@ -1,0 +1,25 @@
+<html>
+<head><title>Our Cabin - at Darley Army Camp</title></head>
+<body bgcolour="f4e8d5">
+<h1>Our Cabin - at Darley Army Camp</h1>
+
+<a href="001.jpg"><image src="s001.jpg"></a>
+<p>
+<a href="002.jpg"><image src="s002.jpg"></a>
+<p>
+<a href="003.jpg"><image src="s003.jpg"></a>
+<br>Gilbert Farrow (in the doorway) and his brother Howard (outside)
+<p>
+<a href="004.jpg"><image src="s004.jpg"></a>
+<p>
+<a href="005.jpg"><image src="s005.jpg"></a>
+<p>
+<a href="006.jpg"><image src="s006.jpg"></a>
+<p>
+<a href="007.jpg"><image src="s007.jpg"></a>
+
+<hr>
+<!--#config timefmt="%A %d %B %Y" -->
+© Copyright Edelweiss Ski Club 2005. This page was last updated on
+<!--#echo var="LAST_MODIFIED" -->.
+</body></html>

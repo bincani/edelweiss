@@ -1,0 +1,31 @@
+<html>
+<head><title>Edelweiss - Our History </title></head>
+<body bgcolour="f4e8d5">
+<h1>Edelweiss - Our History</h1>
+The Edelweiss Ski Club of Australia was formed in 1934.
+<p><center>
+<h2>1947</h2>
+Our Cabin
+<br>
+from
+<br>
+<a href="darley.shtml">Darley Army Camp
+<br>
+<image src="t001.jpg"></a>
+<br>
+to
+<br>
+<a href="hotham.shtml">Hotham
+<br>
+<image src="t014.jpg"></a>
+</center>
+<p>
+<hr>
+Can you identify these people ?
+<p>
+<a href="015.jpg"><image src="s015.jpg"></a>
+<hr>
+<!--#config timefmt="%A %d %B %Y" -->
+© Copyright Edelweiss Ski Club 2005. This page was last updated on
+<!--#echo var="LAST_MODIFIED" -->.
+</body></html>

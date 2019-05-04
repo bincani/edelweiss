@@ -1,0 +1,2 @@
+
+SELECT SUM(`members`), SUM(`juniors`), SUM(`adult_guests`), SUM(`child_guests`) FROM `edelweiss_days` WHERE year(`date`) = 2007;

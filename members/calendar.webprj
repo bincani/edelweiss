@@ -1,0 +1,37 @@
+<!DOCTYPE webproject>
+<webproject>
+  <project usePreviewPrefix="1" previewPrefix="http://asus/~bill/cal/" type="Local" name="Calendar" encoding="iso 8859-1" >
+    <upload/>
+    <defaultDTD>-//w3c//dtd html 4.01 transitional//en</defaultDTD>
+    <item url="" uploadstatus="1" />
+    <item modified_time="1114866617" url="calendar.php" uploadstatus="1" />
+    <item modified_time="1114863026" url="class.Calendar_Booked.php" uploadstatus="1" />
+    <item modified_time="1114234813" url="class.Calendar.php" uploadstatus="1" />
+    <templates>templates/</templates>
+    <toolbars>toolbars/</toolbars>
+    <debuggers>
+      <Gubed>
+        <serverhost>localhost</serverhost>
+        <serverport>8026</serverport>
+        <localbasedir>/home/bill/public_html/cal</localbasedir>
+        <serverbasedir>/~bill/cal</serverbasedir>
+        <useproxy>0</useproxy>
+        <listenport>8016</listenport>
+        <displaydelay>0</displaydelay>
+        <errormask>1802</errormask>
+      </Gubed>
+    </debuggers>
+    <item modified_time="1114869573" url="edelweiss.php" uploadstatus="1" />
+    <item modified_time="1114862121" url="booking_form.php" uploadstatus="1" />
+    <author>Bill Farrow</author>
+    <email>bill@arrowsreach.com</email>
+    <debuggerclient>Gubed</debuggerclient>
+    <exclude cvsignore="false" >*~;</exclude>
+    <teamdata>
+      <taskleaders/>
+      <subprojectleaders/>
+      <mailinglist address="" />
+    </teamdata>
+    <events/>
+  </project>
+</webproject>
