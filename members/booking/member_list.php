@@ -11,14 +11,14 @@ require("class.edelweiss.php");
 
 $mem = new Member();
 $db->query("SELECT `$mem->id_name` FROM " . $mem->table_name . " WHERE `membership_type` NOT LIKE 'Spouse' AND `membership_type` NOT LIKE 'Junior' AND `membership_type` NOT LIKE 'Resigned' ORDER BY last_name");
-if(mysql_num_rows($db->result) == 0)
+if(mysqli_num_rows($db->result) == 0)
 {
   echo "Error";
 }
 else
 {
   $member_ids = array();
-  while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+  while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
     foreach($row as $key => $val)
       $member_ids[] = $val;
 

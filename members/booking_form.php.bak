@@ -4,9 +4,9 @@
 
 <?php
 // Set up the database connection and get a list of the members
-include("../../.mysql.php");
-mysql_connect($servername, $username, $password);
-@mysql_select_db("arrowsreach_db") or die("Unable to select database");
+include("../.mysql.php");
+$conn = mysqli_connect($servername, $username, $password);
+@mysqli_select_db($conn, "arrowsreach_db") or die("Unable to select database");
 
 
 	if ($REQUEST_METHOD == "POST")
@@ -16,10 +16,10 @@ mysql_connect($servername, $username, $password);
 					FROM edelweiss_members AS m
 					WHERE m.member_id = $member_id ";
 
-		$result = mysql_query($query);
-		$m_id = mysql_result($result, 0, "member_id");
-		$m_first = mysql_result($result, $i, "first_name");
-		$m_last = mysql_result($result, $i, "last_name");
+		$result = mysqli_query($conn, $query);
+		$m_id = mysqli_result($result, 0, "member_id");
+		$m_first = mysqli_result($result, $i, "first_name");
+		$m_last = mysqli_result($result, $i, "last_name");
 
 		// Display the submitted values
 		echo "Member ID: $m_id <br>";
@@ -57,9 +57,9 @@ mysql_connect($servername, $username, $password);
 					WHERE m.membership_type != 'Junior' AND m.membership_type != 'Spouse'
 					ORDER BY m.last_name";
 
-		$result = mysql_query($query);
+		$result = mysqli_query($conn, $query);
 
-		$row_count = mysql_numrows($result);
+		$row_count = mysqli_num_rows($result);
 
 ?>
 <h2>Booking Form</h2>
@@ -71,9 +71,9 @@ mysql_connect($servername, $username, $password);
 		<td><select name="member_id">
 			<? for ($i = 0; $i < $row_count; $i++)
 				{
-					$m_id = mysql_result($result, $i, "member_id");
-					$m_first = mysql_result($result, $i, "first_name");
-					$m_last = mysql_result($result, $i, "last_name");
+					$m_id = mysqli_result($result, $i, "member_id");
+					$m_first = mysqli_result($result, $i, "first_name");
+					$m_last = mysqli_result($result, $i, "last_name");
 
 					echo "<option value=\"$m_id\">$m_first $m_last</option>";
 				}

@@ -9,9 +9,9 @@
 <body>
 <h1>Member Phone List</h1>
 <?
-include("../../../.mysql.php");
-mysql_connect($servername, $username, $password);
-@mysql_select_db($databasename) or die("Unable to select database");
+include("../.mysql.php");
+$conn = mysqli_connect($servername, $username, $password);
+@mysqli_select_db($conn, $databasename) or die("Unable to select database");
 
 $aquery = 'SELECT DISTINCT m.member_id, m.first_name, m.last_name, m.dependant_of
 		FROM edelweiss_addresses AS a, edelweiss_members AS m
@@ -19,8 +19,8 @@ $aquery = 'SELECT DISTINCT m.member_id, m.first_name, m.last_name, m.dependant_o
 		WHERE a.address_id = m.address_id AND m.dependant_of IS NULL
 		ORDER BY m.last_name, m.first_name';
 
-$aresult = mysql_query($aquery);
-$arow_count = mysql_numrows($aresult);
+$aresult = mysqli_query($conn, $aquery);
+$arow_count = mysqli_num_rows($aresult);
 ?>
 
 <table border=1>
@@ -33,17 +33,17 @@ $arow_count = mysql_numrows($aresult);
 	<tbody align="left" valign="top">
 	<tr valign="top">
 	<td valign="top">
-		<? echo '<b>' . mysql_result($aresult, $i, "first_name") ." ". 
-			mysql_result($aresult, $i, "last_name") . "</b>"; ?>
+		<? echo '<b>' . mysqli_result($aresult, $i, "first_name") ." ". 
+			mysqli_result($aresult, $i, "last_name") . "</b>"; ?>
 	</td>
 	<td valign="top" align="right">
 	<? /* Print all phone numbers for this member */
-		$presult = mysql_query('SELECT CONCAT_WS("", p.phone_type, " (", p.area_code, ") ", p.number)
+		$presult = mysqli_query($conn, 'SELECT CONCAT_WS("", p.phone_type, " (", p.area_code, ") ", p.number)
 			FROM edelweiss_phone AS p
-			WHERE p.member_id = ' . mysql_result($aresult, $i, "member_id"));
-		$prow_count = mysql_numrows($presult);
+			WHERE p.member_id = ' . mysqli_result($aresult, $i, "member_id"));
+		$prow_count = mysqli_num_rows($presult);
 		for ($k = 0; $k < $prow_count; $k++) {
-			echo mysql_result($presult, $k) . '<br>';
+			echo mysqli_result($presult, $k) . '<br>';
 		}
 	?>
 	</td>
@@ -51,24 +51,24 @@ $arow_count = mysql_numrows($aresult);
 	<? /* Print all members who live under this person */
 		$squery = 'SELECT DISTINCT m.member_id, m.first_name, m.last_name
 				FROM edelweiss_members AS m, edelweiss_email AS e
-				WHERE m.dependant_of = ' . mysql_result($aresult, $i, "member_id");
-		$sresult = mysql_query($squery);
-		$srow_count = mysql_numrows($sresult);
+				WHERE m.dependant_of = ' . mysqli_result($aresult, $i, "member_id");
+		$sresult = mysqli_query($conn, $squery);
+		$srow_count = mysqli_num_rows($sresult);
 		for ($j = 0; $j < $srow_count; $j++) {	
 	?>
 	<tr valign="top">
 	<td valign="top">&nbsp;&nbsp;
-		<? echo mysql_result($sresult, $j, "first_name") ." ". 
-			mysql_result($sresult, $j, "last_name") ; ?>
+		<? echo mysqli_result($sresult, $j, "first_name") ." ". 
+			mysqli_result($sresult, $j, "last_name") ; ?>
 	</td>
 	<td valign="top" align="right">
 	<? /* Print all phone numbers for this member */
-		$presult = mysql_query('SELECT CONCAT_WS("", p.phone_type, " (", p.area_code, ") ", p.number)
+		$presult = mysqli_query($conn, 'SELECT CONCAT_WS("", p.phone_type, " (", p.area_code, ") ", p.number)
 			FROM edelweiss_phone AS p
-			WHERE p.member_id = ' . mysql_result($sresult, $j, "member_id"));
-		$prow_count = mysql_numrows($presult);
+			WHERE p.member_id = ' . mysqli_result($sresult, $j, "member_id"));
+		$prow_count = mysqli_num_rows($presult);
 		for ($k = 0; $k < $prow_count; $k++) {
-			echo mysql_result($presult, $k) . '<br>';
+			echo mysqli_result($presult, $k) . '<br>';
 		}
 	?>
 	</td>

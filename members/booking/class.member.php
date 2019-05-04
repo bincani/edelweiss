@@ -14,17 +14,17 @@ class Member extends DBObject
     $email_array = array();
     $email = new Email();
     $db->query("SELECT `$email->id_name` FROM " . $email->table_name . " WHERE `$this->id_name` = '$this->id'");
-    if(mysql_num_rows($db->result) == 0)
+    if(mysqli_num_rows($db->result) == 0)
       return false;
     else
     {
       $email_ids = array();
-      while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+      while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
         foreach($row as $key => $val)
           $email_ids[] = $val;
 
       foreach($email_ids as $key => $val)
-        $email_array[] =& new Email($val);
+        $email_array[] = new Email($val);
       return $email_array;
     }
   }
@@ -36,17 +36,17 @@ class Member extends DBObject
     $join_array = array();
     $join = new Phone();
     $db->query("SELECT `$join->id_name` FROM " . $join->table_name . " WHERE `$this->id_name` = '$this->id'");
-    if(mysql_num_rows($db->result) == 0)
+    if(mysqli_num_rows($db->result) == 0)
       return false;
     else
     {
       $join_ids = array();
-      while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+      while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
         foreach($row as $key => $val)
           $join_ids[] = $val;
 
       foreach($join_ids as $key => $val)
-        $join_array[] =& new Phone($val);
+        $join_array[] = new Phone($val);
       return $join_array;
     }
   }
@@ -71,17 +71,17 @@ class Member extends DBObject
 
     $join_array = array();
     $db->query("SELECT `$this->id_name` FROM " . $this->table_name . " WHERE `dependant_of` = '$this->id'");
-    if(mysql_num_rows($db->result) == 0)
+    if(mysqli_num_rows($db->result) == 0)
       return false;
     else
     {
       $join_ids = array();
-      while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+      while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
         foreach($row as $key => $val)
           $join_ids[] = $val;
 
       foreach($join_ids as $key => $val)
-        $join_array[] =& new Member($val);
+        $join_array[] = new Member($val);
       return $join_array;
     }
   }
@@ -93,17 +93,17 @@ class Member extends DBObject
 		$join_array = array();
 		$booking = new Booking();
     $db->query("SELECT `$booking->id_name` FROM " . $booking->table_name . " WHERE `$this->id_name` = '$this->id' AND `booking_date` > '$year' AND `booking_date` < DATE_ADD('$year', INTERVAL 1 YEAR)");
-		if(mysql_num_rows($db->result) == 0)
+		if(mysqli_num_rows($db->result) == 0)
 		  return false;
 		else
 		{
 		  $join_ids = array();
-		  while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+		  while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
 			foreach($row as $key => $val)
 			  $join_ids[] = $val;
 
 		  foreach($join_ids as $key => $val)
-			$join_array[] =& new Booking($val);
+			$join_array[] = new Booking($val);
 		  return $join_array;
 		}
 	}
@@ -162,14 +162,14 @@ function test()
 {
 $mem = new Member();
 $db->query("SELECT `$mem->id_name` FROM " . $mem->table_name . " WHERE `membership_type` NOT LIKE 'Spouse' AND `membership_type` NOT LIKE 'Junior'");
-if(mysql_num_rows($db->result) == 0)
+if(mysqli_num_rows($db->result) == 0)
 {
   echo "Error";
 }
 else
 {
   $member_ids = array();
-  while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+  while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
     foreach($row as $key => $val)
       $member_ids[] = $val;
 

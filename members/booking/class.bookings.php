@@ -19,17 +19,17 @@ class Booking extends DBObject
     $join_array = array();
     $join = new Days();
     $db->query("SELECT `$join->id_name` FROM " . $join->table_name . " WHERE `$this->id_name` = '$this->id' ORDER BY date");
-    if(mysql_num_rows($db->result) == 0)
+    if(mysqli_num_rows($db->result) == 0)
       return false;
     else
     {
       $join_ids = array();
-      while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+      while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
         foreach($row as $key => $val)
           $join_ids[] = $val;
 
       foreach($join_ids as $key => $val)
-        $join_array[] =& new Days($val);
+        $join_array[] = new Days($val);
       return $join_array;
     }
   }
@@ -41,17 +41,17 @@ class Booking extends DBObject
     $join_array = array();
     $join = new Payments();
     $db->query("SELECT `$join->id_name` FROM " . $join->table_name . " WHERE `$this->id_name` = '$this->id'");
-    if(mysql_num_rows($db->result) == 0)
+    if(mysqli_num_rows($db->result) == 0)
       return false;
     else
     {
       $join_ids = array();
-      while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+      while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
         foreach($row as $key => $val)
           $join_ids[] = $val;
 
       foreach($join_ids as $key => $val)
-        $join_array[] =& new Payments($val);
+        $join_array[] = new Payments($val);
       return $join_array;
     }
   }
@@ -90,12 +90,12 @@ class Booking extends DBObject
     $booking = new Booking();
     $db->query("SELECT `$booking->id_name` FROM " . $booking->table_name
       ." WHERE `booking_date` >= DATE_SUB('$year', INTERVAL 1 YEAR) AND `booking_date` <= DATE_ADD('$year', INTERVAL 1 YEAR)");
-    if(mysql_num_rows($db->result) == 0)
+    if(mysqli_num_rows($db->result) == 0)
       return false;
     else
     {
-      $row = mysql_fetch_array($db->result, MYSQL_ASSOC);
-      while ($row = mysql_fetch_array($db->result, MYSQL_ASSOC))
+      $row = mysqli_fetch_array($db->result, MYSQLI_ASSOC);
+      while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
         $ids[] = $row[$booking->id_name];
 
       $year_date = strtotime($year . "-01-01");
@@ -168,11 +168,11 @@ class Rates extends DBObject
     $rate = new Rates();
     $db->query("SELECT `$rate->id_name` FROM " . $rate->table_name
       ." WHERE `start` <= '$date' AND `finish` >= '$date'");
-    if(mysql_num_rows($db->result) == 0)
+    if(mysqli_num_rows($db->result) == 0)
       return false;
     else
     {
-      $row = mysql_fetch_array($db->result, MYSQL_ASSOC);
+      $row = mysqli_fetch_array($db->result, MYSQLI_ASSOC);
       return new Rates($row[$rate->id_name]);
     }
   }

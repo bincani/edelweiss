@@ -1,5 +1,5 @@
 <?php
-include("../../../../.mysql.php");
+include("../../.mysql.php");
 require("class.dbobject.php");
 require("class.database.php");
 require("class.member.php");

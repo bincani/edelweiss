@@ -8,6 +8,7 @@ require_once( 'edelweiss.php' );
 
 function AddBooking()
 {
+        global $conn;
 	// Extract the data submitted from the form
 	$member_id = $_REQUEST['member_id'];
 	$date_day = $_REQUEST['date_day'];
@@ -25,19 +26,19 @@ function AddBooking()
 	if ($num_juniors == "") $num_juniors = 0;
 	if ($num_guests == "") $num_guests = 0;
 	if ($num_child_guests == "") $num_child_guests = 0;
-	if ((!ereg("^[0-9]+$", $length)) or ($length < 0) or ($length > 30)) die ("Length ($length) of stay must be less than 30 days");
-	if ((!ereg("^[0-9]+$", $num_members)) or ($num_members < 0) or ($num_members > 14)) die ("Number of Members ($num_members) must be less than 14");
-	if ((!ereg("^[0-9]+$", $num_juniors)) or ($num_juniors < 0) or ($num_juniors > 13)) die ("Number of Juniors ($num_juniors) must be less than 13");
-	if ((!ereg("^[0-9]+$", $num_guests)) or ($num_guests < 0) or ($num_guests > 13)) die ("Number of Adult Guests ($num_guests) must be less than 13");
-	if ((!ereg("^[0-9]+$", $num_child_guests)) or ($num_child_guests < 0) or ($num_child_guests > 13)) die ("Number of Child Guests ($num_child_guests) must be less than 13");
+	if ((!preg_match("/^[0-9]+$/", $length)) or ($length < 0) or ($length > 30)) die ("Length ($length) of stay must be less than 30 days");
+	if ((!preg_match("/^[0-9]+$/", $num_members)) or ($num_members < 0) or ($num_members > 14)) die ("Number of Members ($num_members) must be less than 14");
+	if ((!preg_match("/^[0-9]+$/", $num_juniors)) or ($num_juniors < 0) or ($num_juniors > 13)) die ("Number of Juniors ($num_juniors) must be less than 13");
+	if ((!preg_match("/^[0-9]+$/", $num_guests)) or ($num_guests < 0) or ($num_guests > 13)) die ("Number of Adult Guests ($num_guests) must be less than 13");
+	if ((!preg_match("/^[0-9]+$/", $num_child_guests)) or ($num_child_guests < 0) or ($num_child_guests > 13)) die ("Number of Child Guests ($num_child_guests) must be less than 13");
 	
 	// Check the submitted values
 	$query = "SELECT DISTINCT m.member_id, m.first_name, m.last_name
 				FROM edelweiss_members AS m
 				WHERE m.member_id = $member_id";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-	$query_data = mysql_fetch_array($result);
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+	$query_data = mysqli_fetch_array($result);
 	$m_id = $query_data['member_id'];
 	$m_first = $query_data['first_name'];
 	$m_last = $query_data['last_name'];
@@ -45,7 +46,7 @@ function AddBooking()
 	$query = "SELECT DISTINCT e.address
 				FROM edelweiss_email AS e
 				WHERE e.member_id = $m_id";
-	$result = mysql_query($query);
+	$result = mysqli_query($conn, $query);
 	$m_email = "";
 	if (! $result )
 	{
@@ -53,7 +54,7 @@ function AddBooking()
 	}
 	else
 	{
-		$query_data = mysql_fetch_array($result);
+		$query_data = mysqli_fetch_array($result);
 		$m_email = $query_data['address'];
 	}
 	
@@ -62,13 +63,13 @@ function AddBooking()
 	for ($i = 0; $i < $length; $i++)
 	{
 		$query = "SELECT DATE_ADD('$start_date', INTERVAL $i DAY) AS date";
-		$result = mysql_query($query);
-		if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-		$query_data = mysql_fetch_array($result);
+		$result = mysqli_query($conn, $query);
+		if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+		$query_data = mysqli_fetch_array($result);
 		$date = $query_data['date'];
 		
 		$cost = getCost($date, $num_members, $num_juniors, $num_guests, $num_child_guests);
-		if ($cost <= 0) die ("<hr>Cabin Cost Calculation Error: <br><pre>". mysql_error() ."</pre><hr>");
+		if ($cost <= 0) die ("<hr>Cabin Cost Calculation Error: <br><pre>". mysqli_error() ."</pre><hr>");
 		$total_cost = $total_cost + $cost;
 		
 		$query = "SELECT SUM(members) + SUM(juniors) + SUM(adult_guests) + SUM(child_guests) AS sum
@@ -76,9 +77,9 @@ function AddBooking()
 					WHERE d.date = '$date'
 					AND d.booking_id = b.booking_id
 					AND b.status !='Lapsed' AND b.status !='Cancelled'";
-		$result = mysql_query($query);
-		if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-		$query_data = mysql_fetch_array($result);
+		$result = mysqli_query($conn, $query);
+		if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+		$query_data = mysqli_fetch_array($result);
 		$sum = $query_data['sum'];
 		
 		if ($sum + $num_members + $num_juniors + $num_guests + $num_child_guests > 14)
@@ -92,45 +93,45 @@ function AddBooking()
 		if (! isSummer($date) && ($length < 7) )
 		{
 			$query = "select date from edelweiss_days WHERE CURDATE() < CONCAT( YEAR(CURDATE()),'-05-01') limit 1";
-			$result = mysql_query($query);
-			if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-			if ( mysql_num_rows($result) != 0 ) die ("All winter bookings less than 7 nights must be made after May 1st");
+			$result = mysqli_query($conn, $query);
+			if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+			if ( mysqli_num_rows($result) != 0 ) die ("All winter bookings less than 7 nights must be made after May 1st");
 		}
 
 		// All winter bookings must be made after Jan 1st
 		if (! isSummer($date) )
 		{
 			$query = "select date from edelweiss_days WHERE CURDATE() < CONCAT( YEAR(CURDATE()),'-01-01') limit 1";
-			$result = mysql_query($query);
-			if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-			if ( mysql_num_rows($result) != 0 ) die ("All winter bookings must be made after Jan 1st");
+			$result = mysqli_query($conn, $query);
+			if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+			if ( mysqli_num_rows($result) != 0 ) die ("All winter bookings must be made after Jan 1st");
 		}
 	}
 	
 	// Insert into Database
 	$insert = "INSERT INTO edelweiss_booking (booking_id , member_id, booking_date, status) 
 			VALUES ( '', '$m_id', CURDATE() , 'Unconfirmed' )";
-	$result = mysql_query($insert);
+	$result = mysqli_query($conn, $insert);
 	if (isset($debug)) echo "<pre>" . $insert ."</pre>";
 	if (! $result ) die( "Failed to add booking to the Database");		
-	$booking_id = mysql_insert_id();
+	$booking_id = mysqli_insert_id($conn);
 	for ($i = 0; $i < $length; $i++)
 	{
 		$insert = "INSERT INTO edelweiss_days ( day_id, date , booking_id, members, juniors , adult_guests, child_guests ) 
 				VALUES ( '', DATE_ADD('$start_date', INTERVAL $i DAY), '$booking_id','$num_members', '$num_juniors', '$num_guests', '$num_child_guests')";
-		$result = mysql_query($insert);
+		$result = mysqli_query($conn, $insert);
 		if (isset($debug)) echo "<pre>" . $insert ."</pre>";
 		if (! $result )
 		{
-			echo mysql_error();
+			echo mysqli_error();
 			die( "Failed to add day ".$i. "  to the Database");
 		}
 	}
 
 	$query = "SELECT DATE_ADD(CURDATE(), INTERVAL 14 DAY) AS deposit_date, DATE_SUB('$start_date', INTERVAL 30 DAY) AS remainder_date";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-	$query_data = mysql_fetch_array($result);
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+	$query_data = mysqli_fetch_array($result);
 	$deposit_date = $query_data['deposit_date'];	
 	$remainder_date = $query_data['remainder_date'];	
 	
@@ -171,14 +172,15 @@ function AddBooking()
 
 function ShowForm()
 {
+        global $conn;
 	// Display the Form
 	$query = "SELECT DISTINCT m.member_id, m.first_name, m.last_name
 				FROM edelweiss_members AS m
 				WHERE m.membership_type != 'Junior' AND m.membership_type != 'Spouse' AND m.membership_type != 'Resigned'
 				ORDER BY m.last_name";
 
-	$result = mysql_query($query);
-	$row_count = mysql_numrows($result);
+	$result = mysqli_query($conn, $query);
+	$row_count = mysqli_num_rows($result);
 	$length = "";
 	$num_members = "";
 	$num_juniors = "";
@@ -197,9 +199,9 @@ function ShowForm()
                     <<option value="0">Name of Member</option>"
 			<? for ($i = 0; $i < $row_count; $i++)
 				{
-					$m_id = mysql_result($result, $i, "member_id");
-					$m_first = mysql_result($result, $i, "first_name");
-					$m_last = mysql_result($result, $i, "last_name");
+					$m_id = mysqli_result($result, $i, "member_id");
+					$m_first = mysqli_result($result, $i, "first_name");
+					$m_last = mysqli_result($result, $i, "last_name");
 
 					echo "<option value=\"$m_id\">$m_first $m_last</option>";
 				}
@@ -249,7 +251,8 @@ function ShowForm()
 	</tr>
     <tr>
 		<td align="center">&nbsp;</td>
-		<td><input type="submit" name="simple" value="Make Booking" disabled /></td>
+                <!-- was disabled? date dependant -->
+		<td><input type="submit" name="simple" value="Make Booking" /></td>
 <!--		<td><input type="submit" name="advanced" value="Advanced Options"/></td>
 -->
 	</tr>

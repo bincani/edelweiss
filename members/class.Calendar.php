@@ -37,7 +37,7 @@ var $endDay;
 * @return object
 * @public
 */
-function Calendar ( $yr, $mo )
+function __construct( $yr, $mo )
 {
     $this->year    = $yr;
     $this->month   = (int) $mo;

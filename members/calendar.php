@@ -10,15 +10,15 @@ require_once( 'edelweiss.php' );
 
 function ShowMonthHeader($year)
 {
-	echo "<a href=\"$PHP_SELF?action=ShowMonths&year=".($year -1)."\">".($year -1)."</a>&nbsp;";
+	echo "<a href=\"" . $_SERVER['PHP_SELF'] . "?action=ShowMonths&year=".($year -1)."\">".($year -1)."</a>&nbsp;";
 	echo " &lt; ";
 	for ($i = 1; $i <= 12; $i++)
 	{
 		$month = date("F", mktime(0,0,0,$i,1,$year));
-		echo "<a href=\"$PHP_SELF?action=ShowMonths&year=$year&month=$i\">" . $month ."</a>&nbsp;";
+		echo "<a href=\"" . $_SERVER['PHP_SELF'] . "?action=ShowMonths&year=$year&month=$i\">" . $month ."</a>&nbsp;";
 	}
 	echo " &gt; ";
-	echo "<a href=\"$PHP_SELF?action=ShowMonths&year=".($year +1)."\">".($year +1)."</a>&nbsp;";
+	echo "<a href=\"" . $_SERVER['PHP_SELF'] . "?action=ShowMonths&year=".($year +1)."\">".($year +1)."</a>&nbsp;";
 	echo "<p>";
 }
 
@@ -38,12 +38,12 @@ function ShowMonthFooter()
 
 function ShowMonths()
 {
-if (ereg("^[0-9]+$", $_GET['year'], $match))
+if (array_key_exists('year', $_GET) && preg_match("/^[0-9]+$/", $_GET['year'], $match))
 	$year = $match[0];
 else
 	$year = date("Y");
 
-if (ereg("^[0-9]+$", $_GET['month'], $match))
+if (array_key_exists('month', $_GET) && preg_match("/^[0-9]+$/", $_GET['month'], $match))
 	$month = $match[0];
 else
 	$month = date("n");

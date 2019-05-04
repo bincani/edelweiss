@@ -51,16 +51,16 @@
 			
 			if($column == "") $column = $this->id_name;
 
-			$id = mysql_real_escape_string($id, $db->db);
-			$column = mysql_real_escape_string($column, $db->db);
+			$id = mysqli_real_escape_string($db->db, $id);
+			$column = mysqli_real_escape_string($db->db, $column);
 
 			$db->query("SELECT * FROM " . $this->table_name . " WHERE `$column` = '$id'");
-			if(mysql_num_rows($db->result) == 0)
+			if(mysqli_num_rows($db->result) == 0)
 				return false;
 			else
 			{
 				$this->id = $id;
-				$row = mysql_fetch_array($db->result, MYSQL_ASSOC);
+				$row = mysqli_fetch_array($db->result, MYSQLI_ASSOC);
 				foreach($row as $key => $val)
 					$this->columns[$key] = $val;
 			}
@@ -84,7 +84,7 @@
 
 				$db->query("$cmd " . $this->table_name . " ($columns) VALUES ($values)");
 
-				$this->id = mysql_insert_id($db->db);
+				$this->id = mysqli_insert_id($db->db);
 				return $this->id;
 			}
 		}
@@ -99,7 +99,7 @@
 				$arrStuff[] = "`$key` = '$val'";
 			$stuff = implode(", ", $arrStuff);
 			
-			$id = mysql_real_escape_string($this->id, $db->db);
+			$id = mysqli_real_escape_string($this->id, $db->db);
 		
 			$db->query("UPDATE " . $this->table_name . " SET $stuff WHERE " . $this->id_name . " = '" . $id . "'");
 			return mysql_affected_rows($db->db); // Not always correct due to mysql update bug/feature
@@ -108,7 +108,7 @@
 		function delete()
 		{
 			global $db;
-			$id = mysql_real_escape_string($this->id, $db->db);
+			$id = mysqli_real_escape_string($this->id, $db->db);
 			$db->query("DELETE FROM " . $this->table_name . " WHERE `" . $this->id_name . "` = '" . $id . "'");
 			return mysql_affected_rows($db->db);
 		}
@@ -133,7 +133,7 @@
 			global $db;
 			$columnVals = array();
 			foreach($this->columns  as $key => $val)
-				$columnVals[$key] = mysql_real_escape_string($val, $db->db);
+				$columnVals[$key] = mysqli_real_escape_string($val, $db->db);
 			return $columnVals;
 		}
 	}

@@ -26,15 +26,15 @@
 		
 		function connect()
 		{
-			$this->db = mysql_connect($this->host, $this->user, $this->password) or $this->notify();
+			$this->db = mysqli_connect($this->host, $this->user, $this->password) or $this->notify();
 			if(!empty($this->dbname))
-				mysql_select_db($this->dbname, $this->db) or $this->notify();
+				mysqli_select_db($this->db, $this->dbname) or $this->notify();
 		}
 
 		function query($sql)
 		{
 			$this->queries[] = $sql;
-			$this->result = mysql_query($sql, $this->db) or $this->notify();
+			$this->result = mysqli_query($this->db, $sql) or $this->notify();
 			return $this->result;
 		}
 
@@ -42,14 +42,14 @@
 		function getValue($arg = null)
 		{
 			if(is_null($arg) && $this->isValid())
-				return mysql_result($this->result, 0, 0);
+				return mysqli_result($this->result, 0, 0);
 			elseif(is_resource($arg) && $this->isValid($arg))
-				return mysql_result($arg, 0, 0);
+				return mysqli_result($arg, 0, 0);
 			elseif(is_string($arg))
 			{
 				$this->query($arg);
 				if($this->isValid())
-					return mysql_result($this->result, 0, 0);
+					return mysqli_result($this->result, 0, 0);
 			}
 			return false;
 		}
@@ -57,14 +57,14 @@
 		function numRows($arg = null)
 		{
 			if(is_null($arg) && $this->isValid())
-				return mysql_num_rows($this->result);
+				return mysqli_num_rows($this->result);
 			elseif(is_resource($arg) && $this->isValid($arg))
-				return mysql_num_rows($arg);
+				return mysqli_num_rows($arg);
 			elseif(is_string($arg))
 			{
 				$this->query($arg);
 				if($this->isValid())
-					return mysql_num_rows($this->result);
+					return mysqli_num_rows($this->result);
 			}
 			return false;
 		}
@@ -73,14 +73,14 @@
 		function getRow($arg = null)
 		{
 			if(is_null($arg) && $this->isValid())
-				return mysql_fetch_array($this->result, MYSQL_ASSOC);
+				return mysqli_fetch_array($this->result, MYSQLI_ASSOC);
 			elseif(is_resource($arg) && $this->isValid($arg))
-				return mysql_fetch_array($arg, MYSQL_ASSOC);
+				return mysqli_fetch_array($arg, MYSQLI_ASSOC);
 			elseif(is_string($arg))
 			{
 				$this->query($arg);
 				if($this->isValid())
-					return mysql_fetch_array($this->result, MYSQL_ASSOC);
+					return mysqli_fetch_array($this->result, MYSQLI_ASSOC);
 			}
 			return false;
 		}
@@ -104,7 +104,7 @@
 
 			$rows = array();
 			mysql_data_seek($result, 0);
-			while($row = mysql_fetch_array($result, MYSQL_ASSOC))
+			while($row = mysqli_fetch_array($result, MYSQLI_ASSOC))
 				$rows[] = $row;
 			return $rows;
 		}
@@ -152,10 +152,10 @@
 		function isValid($result = null)
 		{
 			if(is_null($result)) $result = $this->result;
-			return is_resource($result) && (mysql_num_rows($result) > 0);
+			return is_resource($result) && (mysqli_num_rows($result) > 0);
 		}
 
-		function quote($var) { return "'" . mysql_real_escape_string($var, $this->db) . "'"; }
+		function quote($var) { return "'" . mysqli_real_escape_string($var, $this->db) . "'"; }
 		function quoteParam($var) { return $this->quote($this->fix_slashes($_REQUEST[$var])); }
 		function numQueries() { return count($this->queries); }
 		function lastQuery() { return $this->queries[count($this->queries) - 1]; }
@@ -171,7 +171,7 @@
 		{
 			global $auth;
 			
-			$err_msg = mysql_error($this->db);
+			$err_msg = mysqli_error($this->db);
 			error_log($err_msg);
 
 			switch($this->onError)

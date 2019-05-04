@@ -1,8 +1,9 @@
 <?php
 
-include("../../../.mysql.php");
-mysql_connect($servername, $username, $password);
-@mysql_select_db($databasename) or die("Unable to select database");
+include("../.mysql.php");
+//echo sprintf("%s|%s|%s|%s\n", $servername, $username, $password,$databasename);
+$conn = mysqli_connect($servername, $username, $password) or die("Cannot connect to database server");
+mysqli_select_db($conn, $databasename) or die("Unable to select database");
 
 function getStatusColour($status)
 {
@@ -20,19 +21,20 @@ function getStatusColour($status)
 
 function getCost($date, $members, $juniors, $adult_guests, $child_guests)
 {
+        global $conn;
 	$query = "SELECT DISTINCT r.adult, r.junior, r.adult_guest, r.child_guest
 	FROM edelweiss_rates AS r
 	WHERE r.start <= '$date'
 	AND r.finish >= '$date'
 	LIMIT 1";
-	$result = mysql_query($query);
+	$result = mysqli_query($conn, $query);
 	if (!$result)
 	{
 		$total = 0;
 	}
 	else
 	{
-		$query_data = mysql_fetch_array($result);
+		$query_data = mysqli_fetch_array($result);
 		$p_mem = $query_data['adult'];
 		$p_junior = $query_data['junior'];
 		$p_guest = $query_data['adult_guest'];
@@ -49,6 +51,7 @@ function getCost($date, $members, $juniors, $adult_guests, $child_guests)
 
 function dspBookingSummaryForDay($date)
 {
+        global $conn;
 	$query = "SELECT m.first_name, m.last_name, b.booking_id, b.status,
 	members + juniors + adult_guests + child_guests AS total
 	FROM edelweiss_days AS d, edelweiss_booking AS b, edelweiss_members AS m
@@ -56,17 +59,17 @@ function dspBookingSummaryForDay($date)
 	AND d.booking_id = b.booking_id
 	AND b.member_id = m.member_id
 	LIMIT 20";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
 	$count = 0;
-	while ($query_data = mysql_fetch_array($result))
+	while ($query_data = mysqli_fetch_array($result))
 	{
 		$name = $query_data["first_name"]."&nbsp;".$query_data["last_name"];
 		$total = $query_data["total"];
 		$id = $query_data["booking_id"];
 		$status = $query_data["status"];
 		$colour = getStatusColour($status);
-##		echo "<a href=\"$PHP_SELF?action=show_booking&id=$id\"><font size=1 color=$colour>$name&nbsp;$total</font></a><br>";
+##		echo "<a href=\"" . $_SERVER['PHP_SELF'] . "?action=show_booking&id=$id\"><font size=1 color=$colour>$name&nbsp;$total</font></a><br>";
 		echo "<a href=\"booking/display_booking.php?booking=$id\"><font size=1 color=$colour>$name&nbsp;$total</font></a><br>";
 		$count++;
 	}
@@ -88,13 +91,13 @@ function dspDayBookings($date)
 	AND d.booking_id = b.booking_id
 	AND b.member_id = m.member_id
 	LIMIT 20";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
 	
 	echo "<table border=1>";
 	echo "<thead><tr><td>Name</td><td>Members</td><td>Juniors</td>".
 		"<td>Adult Guests</td><td>Child Guests</td><td>Total</td><td>&nbsp;</td></tr></thead>";
-	while ($query_data = mysql_fetch_array($result))
+	while ($query_data = mysqli_fetch_array($result))
 	{
 		$name = $query_data["first_name"]." ".$query_data["last_name"];
 		$members = $query_data["members"];
@@ -113,7 +116,7 @@ function dspDayBookings($date)
 		echo "<td align='right'>" . $adult_guests ."</td>";
 		echo "<td align='right'>" . $child_guests ."</td>";
 		echo "<td align='right'><b>" . $query_data["total"] ."</b></td>";
-		echo "<td><a href=\"$PHP_SELF?action=show_booking&id=".$query_data["booking_id"]."\">Details</a></td></tr>";
+		echo "<td><a href=\"" . $_SERVER['PHP_SELF'] . "?action=show_booking&id=".$query_data["booking_id"]."\">Details</a></td></tr>";
 	}
 	
 }
@@ -128,9 +131,9 @@ function dspDayBooking($id)
 	AND d.booking_id = b.booking_id
 	AND b.member_id = m.member_id
 	LIMIT 20";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-	$query_data = mysql_fetch_array($result);
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+	$query_data = mysqli_fetch_array($result);
 	$name = $query_data["first_name"]." ".$query_data["last_name"];
 	$booking_date = $query_data["booking_date"];
 	$status = $query_data['status'];
@@ -151,14 +154,14 @@ function dspDayBooking($id)
 	AND d.booking_id = b.booking_id
 	ORDER BY date
 	LIMIT 20";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
 	$total_cost = 0;
 	
 	echo "<table border=1>";
 	echo "<thead><tr><td>Date</td><td>Members</td><td>Juniors</td>".
 		"<td>Adult Guests</td><td>Child Guests</td><td>Total Beds</td><td>Cost</td></tr></thead>";
-	while ($query_data = mysql_fetch_array($result))
+	while ($query_data = mysqli_fetch_array($result))
 	{
 		$date = $query_data["date"];
 		$members = $query_data["members"];
@@ -192,14 +195,14 @@ function dspDayBooking($id)
 	FROM edelweiss_payments AS p
 	WHERE p.booking_id = $id
 	LIMIT 20";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
 	$paid = 0;
 	
 	echo "<table border=1>";
 	echo "<thead><tr><td>Date</td><td>Type</td><td>Detials</td>".
 		"<td>Amount</td></tr></thead>";
-	while ($query_data = mysql_fetch_array($result))
+	while ($query_data = mysqli_fetch_array($result))
 	{
 		$date = $query_data["date"];
 		$amount = $query_data["amount"];
@@ -218,30 +221,32 @@ function dspDayBooking($id)
 
 function isSummer($date)
 {
+        global $conn;
 	$query = "SELECT r.name
 	FROM edelweiss_rates AS r
 	WHERE r.start <= '$date'
 	AND r.finish >= '$date'
 	AND r.name LIKE 'Summer'
 	LIMIT 1";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-	$query_data = mysql_fetch_array($result);
-	return (ereg("Summer", $query_data['name']));
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
+	$query_data = mysqli_fetch_array($result);
+	return (preg_match("/Summer/i", $query_data['name']));
 }
 
 function isHighPeak($date)
 {
+        global $conn;
 	$query = "SELECT r.name
 	FROM edelweiss_rates AS r
 	WHERE r.start <= '$date'
 	AND r.finish >= '$date'
 	AND r.name LIKE 'Winter'
 	LIMIT 1";
-	$result = mysql_query($query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysql_error() ."</pre><hr>");
-	$query_data = mysql_fetch_array($result);
-	return (ereg("Winter", $query_data['name']));
+	$result = mysqli_query($conn, $query);
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
+	$query_data = mysqli_fetch_array($result);
+	return (preg_match("/Winter/i", $query_data['name']));
 }
 
 // Display the bookings for an entrire year
@@ -261,15 +266,15 @@ function dspBookingsForYear($report_year)
       GROUP BY b.booking_id
       ORDER BY d.date";
 
-  $result = mysql_query($query);
-  $row_count = mysql_numrows($result);
+  $result = mysqli_query($query);
+  $row_count = mysqli_num_rows($result);
   $total_beds_count = 0;
   $total_cancelled_count = 0;
   
   echo "<table border=1>\n";
   echo "<tr bgcolor=lightgray>";
   echo "<td>Booking</td><td>Name</td><td>Start Date</td><td>Status</td><td>Nights</td><td>Bed Nights</td></tr>\n";
-        while ($query_data = mysql_fetch_array($result))
+        while ($query_data = mysqli_fetch_array($result))
         {
                 $id = $query_data["booking_id"];
                 $name = $query_data["member"];
