@@ -151,22 +151,22 @@ function AddBooking()
 	$mail_body .= sprintf("A deposit of \$%01.2f is due by %s\n", $total_cost * 0.30, $deposit_date);
 	$mail_body .= sprintf("The booking must be paid in full by %s (remainder is \$%01.2f)\n", $remainder_date, $total_cost * 0.70);
 
-	$mail_header  = "From: \"Edelweiss Bookings\"  <edelweiss@arrowsreach.com>\r\n";
+	$mail_header  = "From: \"Edelweiss Bookings\"  <bookings@edelweiss-ski.club>\r\n";
 	if ($m_email != "") $mail_header  .= "Cc: \"$m_first $m_last\"  <$m_email>\r\n";
-	$mail_header .= "Reply-to: edelweiss@arrowsreach.com\r\n";
-	$mail_header .= "Return-path: edelweiss@arrowsreach.com\r\n";
+	$mail_header .= "Reply-to: bookings@edelweiss-ski.club\r\n";
+	$mail_header .= "Return-path: bookings@edelweiss-ski.club\r\n";
 
 	echo "<hr width='50%' align='left'><pre>$mail_body</pre>";
 	;
-	if ( mail("edelweiss@arrowsreach.com", "Booking for $m_first $m_last ($m_id)",$mail_body, $mail_header))
+	if ( mail("bookings@edelweiss-ski.club", "Booking for $m_first $m_last ($m_id)",$mail_body, $mail_header))
 	{
-		echo "<hr>An email has been sent to edelweiss@arrowsreach.com ";
+		echo "<hr>An email has been sent to bookings@edelweiss-ski.club ";
 		if ($m_email != "") echo "and $m_email ";
 		echo "with the above infomation.<p>";
 	}
 	else
 	{
-		echo "<hr>Unfortunatly sending email to edelweiss@arrowsreach.com or $m_email failed unexpectedly. The booking has still been accepted.<p>";
+		echo "<hr>Unfortunatly sending email to bookings@edelweiss-ski.club or $m_email failed unexpectedly. The booking has still been accepted.<p>";
 	}
 }
 
