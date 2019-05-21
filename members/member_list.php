@@ -1,3 +1,6 @@
+<?php
+$emails = array();
+?>
 <html>
 <head><title>Edelweiss Membership</title></head>
 <body>
@@ -15,7 +18,7 @@ $conn = mysqli_connect($servername, $username, $password);
 	.' ORDER BY last_name';
 */
 
-$aquery = 'SELECT DISTINCT m.member_id, m.first_name, m.last_name, m.membership_type, m.dependant_of, 
+$aquery = 'SELECT DISTINCT m.member_id, m.club_title, m.first_name, m.last_name, m.membership_type, m.dependant_of, 
 		a.street, a.city, a.state, a.postcode, e.address
 		FROM edelweiss_addresses AS a, edelweiss_members AS m, edelweiss_email AS e
 		RIGHT OUTER JOIN edelweiss_email ON m.member_id = e.member_id
@@ -23,30 +26,59 @@ $aquery = 'SELECT DISTINCT m.member_id, m.first_name, m.last_name, m.membership_
 		ORDER BY m.last_name, m.first_name';
 
 
-$aquery = 'SELECT DISTINCT m.member_id, m.first_name, m.last_name, m.membership_type, m.dependant_of, a.street, a.city, a.state, a.postcode, e.address FROM edelweiss_members m
+$aquery = 'SELECT DISTINCT
+ m.member_id, m.club_title, m.first_name, m.last_name, m.membership_type, m.dependant_of, a.street, a.city, a.state, a.postcode, e.address
+FROM edelweiss_members m
 left join edelweiss_addresses a on m.address_id = a.address_id
 left join edelweiss_email e on m.member_id = e.member_id
-WHERE m.dependant_of IS NULL ORDER BY m.last_name, m.first_name';
+WHERE
+m.dependant_of IS NULL
+AND
+membership_type != "Resigned"
+ORDER BY m.last_name, m.first_name
+';
 
 $aresult = mysqli_query($conn, $aquery);
 $arow_count = mysqli_num_rows($aresult);
 ?>
-
-<table border=1>
-  <tbody align="left" valign="top">
-  
-<?  for ($i = 0; $i < $arow_count; $i++) { ?>
+<style>
+table {
+  border-collapse: collapse;
+  border: 1px solid #000000;
+}
+table td {
+  padding: 5px;
+}
+table thead tr th {
+  background: #eeeeee;
+  padding: 5px 0 5px 10px;
+  text-align: left;
+  border: 1px solid #000000;
+}
+.row td{
+    border-top: 1px solid #000000;
+}
+</style>
+<table padding="0" spacing="0">
+  <thead>
     <tr>
-      <td valign="top">
-	<table border=0><COLGROUP><COL width='250'><COL width='250'><COL width='250' align=center>
-	<tbody align="left" valign="top">
-	<tr valign="top">
+      <th>Title</th>
+      <th>Name</th>
+      <th>Contact</th>
+      <th>Email</th>
+      <th>Address</th>
+    </tr>
+  </thead> 
+  <tbody align="left" valign="top">
+  <?php for ($i = 0; $i < $arow_count; $i++) { ?>
+    <tr valign="top" class="row">
+        <td><?php echo mysqli_result($aresult, $i, "club_title") ?></td>
 	<td valign="top">
 		<? echo '<b>' . mysqli_result($aresult, $i, "first_name") ." ". 
 			mysqli_result($aresult, $i, "last_name") . "</b> (".
 			mysqli_result($aresult, $i, "membership_type") .")"; ?>
 	</td>
-	<td valign="top" align="right">
+	<td valign="top" align="left">
 	<? /* Print all phone numbers for this member */
 		$presult = mysqli_query($conn, 'SELECT CONCAT_WS("", p.phone_type, " (", p.area_code, ") ", p.number)
 			FROM edelweiss_phone AS p
@@ -57,33 +89,50 @@ $arow_count = mysqli_num_rows($aresult);
 		}
 	?>
 	</td>
-	<td valign="top" align="right">
-	<? echo "<a href=\"mailto:" . mysqli_result($aresult, $i, "address") . "\">"
+	<td valign="top" align="left">
+        <?php
+        $email = mysqli_result($aresult, $i, "address");
+        if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $emails[] = $email;
+        }
+	echo "<a href=\"mailto:" . mysqli_result($aresult, $i, "address") . "\">"
 				.mysqli_result($aresult, $i, "address") . "</a>"; ?></td>
-	</tr>
-	<? /* Print all members who live under this person */
-		$squery = 'SELECT DISTINCT m.member_id, m.first_name, m.last_name, m.membership_type, e.address
-				FROM edelweiss_members AS m, edelweiss_email AS e
-				RIGHT OUTER JOIN edelweiss_email ON m.member_id = e.member_id
-				WHERE m.dependant_of = ' . mysqli_result($aresult, $i, "member_id");
 
+        <? /* Print all members who live under this person */
                 $squery = 'SELECT DISTINCT m.member_id, m.first_name, m.last_name, m.membership_type, e.address
+                                FROM edelweiss_members AS m, edelweiss_email AS e
+                                RIGHT OUTER JOIN edelweiss_email ON m.member_id = e.member_id
+                                WHERE m.dependant_of = ' . mysqli_result($aresult, $i, "member_id");
+
+                $squery = 'SELECT DISTINCT m.member_id, m.club_title, m.first_name, m.last_name, m.membership_type, e.address
                                 FROM edelweiss_members AS m
                                 LEFT JOIN edelweiss_email e ON m.member_id = e.member_id WHERE m.dependant_of = ' . mysqli_result($aresult, $i, "member_id");
 
                 //echo $squery;
-		$sresult = mysqli_query($conn, $squery);
-		$srow_count = mysqli_num_rows($sresult);
+                $sresult = mysqli_query($conn, $squery);
+                $srow_count = mysqli_num_rows($sresult);
+
+?>
+          <td valign="top" rowspan="<?php echo ($srow_count + 1); ?>">
+                <? echo mysqli_result($aresult, $i, "street") . "<br>"
+                        . mysqli_result($aresult, $i, "city") .","
+                        . mysqli_result($aresult, $i, "state") ." "
+                        . mysqli_result($aresult, $i, "postcode"); ?>
+          </td>
+
+	</tr>
+       <?php
 		for ($j = 0; $j < $srow_count; $j++) {	
 	?>
 	<tr valign="top">
-	<td valign="top">&nbsp;&nbsp;
+          <td><?php echo mysqli_result($sresult, $j, "club_title") ?></td>
+	  <td valign="top">&nbsp;&nbsp;
 		<? echo mysqli_result($sresult, $j, "first_name") ." ". 
 			mysqli_result($sresult, $j, "last_name") . " (".
 			mysqli_result($sresult, $j, "membership_type") .")"; ?>
-	</td>
-	<td valign="top" align="right">
-	<? /* Print all phone numbers for this member */
+	  </td>
+	  <td valign="top" align="left">
+	  <? /* Print all phone numbers for this member */
 		$presult = mysqli_query($conn, 'SELECT CONCAT_WS("", p.phone_type, " (", p.area_code, ") ", p.number)
 			FROM edelweiss_phone AS p
 			WHERE p.member_id = ' . mysqli_result($sresult, $j, "member_id"));
@@ -91,27 +140,23 @@ $arow_count = mysqli_num_rows($aresult);
 		for ($k = 0; $k < $prow_count; $k++) {
 			echo mysqli_result($presult, $k) . '<br>';
 		}
-	?>
-	</td>
-	<td valign="top" align="right">
-	<? echo "<a href=\"mailto:" . mysqli_result($sresult, $j, "address") . "\">"
+	  ?>
+	  </td>
+	  <td valign="top" align="left">
+	  <?php
+          $email = mysqli_result($sresult, $j, "address");
+          if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+              $emails[] = $email;
+          }
+          echo "<a href=\"mailto:" . mysqli_result($sresult, $j, "address") . "\">"
 				.mysqli_result($sresult, $j, "address") . "</a>"; ?></td>
-	</tr>
-	<? } ?>
-	</tbody>
-	</table>    
-      </td>
+	  <? } ?>
 			
-      <td valign="top">
-		<? echo mysqli_result($aresult, $i, "street") . "<br>"
-			. mysqli_result($aresult, $i, "city") .","
-			. mysqli_result($aresult, $i, "state") ." "
-			. mysqli_result($aresult, $i, "postcode"); ?>
-	</td>
-    </tr>
-<? } ?>
+      </tr>
+  <? } // end foreach ?>
   </tbody>
 </table>
+<a href="mailto:<?php echo implode(",", $emails); ?>">email all members</a>
 
 <!--
 $i = 0;
