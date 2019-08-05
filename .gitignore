@@ -4,4 +4,6 @@
 .well-known
 
 members/booking/error_log
-members/contact-form/config/config.php
+
+config/.mail.php
+config/.mysql.php
