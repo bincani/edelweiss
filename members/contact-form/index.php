@@ -3,8 +3,10 @@
 A Simple Contact Form developed in PHP with HTML5 Form validation. Has a fallback
 in pure JavaScript for browsers that do not support HTML5 form validation.
 */
-require_once './Helpers/Config.class.php';
+require_once $_SERVER["DOCUMENT_ROOT"] . '/lib/Helpers/Config.class.php';
 require_once $_SERVER["DOCUMENT_ROOT"] . '/vendor/autoload.php';
+
+$configPath = $_SERVER["DOCUMENT_ROOT"] . '/config/.mail.php';
 
 use Helpers\Config;
 //https://github.com/pinceladasdaweb/Config
@@ -13,7 +15,7 @@ use Mailgun\Mailgun;
 // https://github.com/mailgun/mailgun-php
 
 $config = new Config;
-$config->load('./config/config.php');
+$config->load($configPath);
 
 $errorMessage = $config->get('messages.error');
 
@@ -37,7 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         //$postData['from'] = $config->get('emails.from');
         //$mail->setSender($name);
         //$mail->setSenderEmail($email);
-        $postData['from'] = sprintf("%s <%s>", $name, $email);
+        //$postData['from'] = sprintf("%s <%s>", $name, $email);
+        $postData['from'] = $config->get('emails.to');
+        $postData['h:Reply-To'] = $email;
 
         $postData['subject'] = $config->get('subject.prefix') . ' ' . $subject;
 
@@ -88,23 +92,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" media="screen">
 </head>
 <body>
-    <div class="page-header col-md-6 col-md-offset-3">
+    <div class="page-header col-md-8 col-md-offset-1">
         <h2>Contact Form</h2>
+        <p>Use this form to submit questions or suggestions you may have about the website or the lodge.</p>
     </div>
     <?php if (!empty($emailSent)): ?>
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-8 col-md-offset-1">
             <div class="alert alert-success text-center"><?php echo $config->get('messages.success'); ?></div>
         </div>
-        <div class="col-md-9 col-md-offset-3">
+        <div class="col-md-9 col-md-offset-1">
             <button type="button" class="btn btn-default" onclick="window.location.href='index.php';">Back to Contact Form</button>
         </div>
     <?php else: ?>
         <?php if(!empty($hasError)): ?>
-            <div class="col-md-5 col-md-offset-4">
+            <div class="col-md-5 col-md-offset-1">
                 <div class="alert alert-danger text-center"><?php echo $errorMessage; ?></div>
             </div>
         <?php endif; ?>
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-8 col-md-offset-1">
             <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" enctype="application/x-www-form-urlencoded" id="contact-form" class="form-horizontal" method="post">
                 <div class="form-group">
                     <label for="form-name" class="col-lg-2 control-label"><?php echo $config->get('fields.name'); ?></label>
@@ -144,8 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     <?php endif; ?>
-
-    <script type="text/javascript" src="public/js/contact-form.js"></script>
+    <script type="text/javascript" src="/lib/js/contact-form.js"></script>
     <script type="text/javascript">
         new ContactForm('#contact-form');
     </script>

@@ -9,7 +9,7 @@
 <body>
 <h1>Member Phone List</h1>
 <?
-include("../.mysql.php");
+require_once $_SERVER["DOCUMENT_ROOT"] . '/config/.mysql.php';
 $conn = mysqli_connect($servername, $username, $password);
 @mysqli_select_db($conn, $databasename) or die("Unable to select database");
 
@@ -25,7 +25,7 @@ $arow_count = mysqli_num_rows($aresult);
 
 <table border=1>
   <tbody align="left" valign="top">
-  
+
 <?  for ($i = 0; $i < $arow_count; $i++) { ?>
     <tr>
       <td valign="top">
@@ -33,7 +33,7 @@ $arow_count = mysqli_num_rows($aresult);
 	<tbody align="left" valign="top">
 	<tr valign="top">
 	<td valign="top">
-		<? echo '<b>' . mysqli_result($aresult, $i, "first_name") ." ". 
+		<? echo '<b>' . mysqli_result($aresult, $i, "first_name") ." ".
 			mysqli_result($aresult, $i, "last_name") . "</b>"; ?>
 	</td>
 	<td valign="top" align="right">
@@ -54,11 +54,11 @@ $arow_count = mysqli_num_rows($aresult);
 				WHERE m.dependant_of = ' . mysqli_result($aresult, $i, "member_id");
 		$sresult = mysqli_query($conn, $squery);
 		$srow_count = mysqli_num_rows($sresult);
-		for ($j = 0; $j < $srow_count; $j++) {	
+		for ($j = 0; $j < $srow_count; $j++) {
 	?>
 	<tr valign="top">
 	<td valign="top">&nbsp;&nbsp;
-		<? echo mysqli_result($sresult, $j, "first_name") ." ". 
+		<? echo mysqli_result($sresult, $j, "first_name") ." ".
 			mysqli_result($sresult, $j, "last_name") ; ?>
 	</td>
 	<td valign="top" align="right">
@@ -75,7 +75,7 @@ $arow_count = mysqli_num_rows($aresult);
 	</tr>
 	<? } ?>
 	</tbody>
-	</table>    
+	</table>
       </td>
     </tr>
 <? } ?>

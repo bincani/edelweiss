@@ -1,5 +1,5 @@
 <?php
-include("../../.mysql.php");
+require_once $_SERVER["DOCUMENT_ROOT"] . '/config/.mysql.php';
 require("class.dbobject.php");
 require("class.database.php");
 require("class.member.php");

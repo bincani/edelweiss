@@ -1,6 +1,7 @@
 <?php
 
-include("../.mysql.php");
+require_once $_SERVER["DOCUMENT_ROOT"] . '/config/.mysql.php';
+
 //echo sprintf("%s|%s|%s|%s\n", $servername, $username, $password,$databasename);
 $conn = mysqli_connect($servername, $username, $password) or die("Cannot connect to database server");
 mysqli_select_db($conn, $databasename) or die("Unable to select database");

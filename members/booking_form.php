@@ -1,14 +1,26 @@
 <html>
 <head><title>Booking Form</title></head>
 <body>
-
 <?php
 // Set up the database connection and get a list of the members
 require_once( 'edelweiss.php' );
 
+require_once $_SERVER["DOCUMENT_ROOT"] . '/lib/Helpers/Config.class.php';
+require_once $_SERVER["DOCUMENT_ROOT"] . '/vendor/autoload.php';
+
+$configPath = $_SERVER["DOCUMENT_ROOT"] . '/config/.mail.php';
+
+use Helpers\Config;
+use Mailgun\Mailgun;
+
+$config = new Config;
+$config->load($configPath);
+
 function AddBooking()
 {
-        global $conn;
+    global $conn;
+    global $config;
+
 	// Extract the data submitted from the form
 	$member_id = $_REQUEST['member_id'];
 	$date_day = $_REQUEST['date_day'];
@@ -31,57 +43,53 @@ function AddBooking()
 	if ((!preg_match("/^[0-9]+$/", $num_juniors)) or ($num_juniors < 0) or ($num_juniors > 13)) die ("Number of Juniors ($num_juniors) must be less than 13");
 	if ((!preg_match("/^[0-9]+$/", $num_guests)) or ($num_guests < 0) or ($num_guests > 13)) die ("Number of Adult Guests ($num_guests) must be less than 13");
 	if ((!preg_match("/^[0-9]+$/", $num_child_guests)) or ($num_child_guests < 0) or ($num_child_guests > 13)) die ("Number of Child Guests ($num_child_guests) must be less than 13");
-	
+
 	// Check the submitted values
 	$query = "SELECT DISTINCT m.member_id, m.first_name, m.last_name
 				FROM edelweiss_members AS m
 				WHERE m.member_id = $member_id";
 	$result = mysqli_query($conn, $query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
 	$query_data = mysqli_fetch_array($result);
 	$m_id = $query_data['member_id'];
 	$m_first = $query_data['first_name'];
 	$m_last = $query_data['last_name'];
 
-	$query = "SELECT DISTINCT e.address
-				FROM edelweiss_email AS e
-				WHERE e.member_id = $m_id";
+	$query = "SELECT DISTINCT e.address FROM edelweiss_email AS e WHERE e.member_id = $m_id";
 	$result = mysqli_query($conn, $query);
 	$m_email = "";
-	if (! $result )
-	{
-		echo "<hr>Email address missing<hr>";
+	if (! $result ) {
+        echo "<hr>Email address missing<hr>";
 	}
-	else
-	{
+	else {
 		$query_data = mysqli_fetch_array($result);
 		$m_email = $query_data['address'];
 	}
-	
+
 	// Check cabin availability & Calculate the price
 	$total_cost = 0;
 	for ($i = 0; $i < $length; $i++)
 	{
 		$query = "SELECT DATE_ADD('$start_date', INTERVAL $i DAY) AS date";
 		$result = mysqli_query($conn, $query);
-		if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+		if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
 		$query_data = mysqli_fetch_array($result);
 		$date = $query_data['date'];
-		
+
 		$cost = getCost($date, $num_members, $num_juniors, $num_guests, $num_child_guests);
-		if ($cost <= 0) die ("<hr>Cabin Cost Calculation Error: <br><pre>". mysqli_error() ."</pre><hr>");
+		if ($cost <= 0) die ("<hr>Cabin Cost Calculation Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
 		$total_cost = $total_cost + $cost;
-		
+
 		$query = "SELECT SUM(members) + SUM(juniors) + SUM(adult_guests) + SUM(child_guests) AS sum
 					FROM edelweiss_days AS d, edelweiss_booking AS b
 					WHERE d.date = '$date'
 					AND d.booking_id = b.booking_id
 					AND b.status !='Lapsed' AND b.status !='Cancelled'";
 		$result = mysqli_query($conn, $query);
-		if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+		if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
 		$query_data = mysqli_fetch_array($result);
 		$sum = $query_data['sum'];
-		
+
 		if ($sum + $num_members + $num_juniors + $num_guests + $num_child_guests > 14)
 		{
 			echo "Day $date has $sum beds already booked<p>";
@@ -94,7 +102,7 @@ function AddBooking()
 		{
 			$query = "select date from edelweiss_days WHERE CURDATE() < CONCAT( YEAR(CURDATE()),'-05-01') limit 1";
 			$result = mysqli_query($conn, $query);
-			if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+			if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
 			if ( mysqli_num_rows($result) != 0 ) die ("All winter bookings less than 7 nights must be made after May 1st");
 		}
 
@@ -103,43 +111,47 @@ function AddBooking()
 		{
 			$query = "select date from edelweiss_days WHERE CURDATE() < CONCAT( YEAR(CURDATE()),'-01-01') limit 1";
 			$result = mysqli_query($conn, $query);
-			if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+			if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
 			if ( mysqli_num_rows($result) != 0 ) die ("All winter bookings must be made after Jan 1st");
 		}
 	}
-	
+
 	// Insert into Database
-	$insert = "INSERT INTO edelweiss_booking (booking_id , member_id, booking_date, status) 
-			VALUES ( '', '$m_id', CURDATE() , 'Unconfirmed' )";
+	$insert = "INSERT INTO edelweiss_booking (member_id, booking_date, status) VALUES ($m_id, CURDATE(),'Unconfirmed' )";
+	//echo sprintf("insert: %s", $insert);
 	$result = mysqli_query($conn, $insert);
-	if (isset($debug)) echo "<pre>" . $insert ."</pre>";
-	if (! $result ) die( "Failed to add booking to the Database");		
+	if (isset($debug)) {
+	    echo "<pre>" . $insert ."</pre>";
+	}
+	if (! $result ) {
+	    die( "Failed to add booking to the Database");
+	}
 	$booking_id = mysqli_insert_id($conn);
 	for ($i = 0; $i < $length; $i++)
 	{
-		$insert = "INSERT INTO edelweiss_days ( day_id, date , booking_id, members, juniors , adult_guests, child_guests ) 
-				VALUES ( '', DATE_ADD('$start_date', INTERVAL $i DAY), '$booking_id','$num_members', '$num_juniors', '$num_guests', '$num_child_guests')";
+		$insert = "INSERT INTO edelweiss_days (date , booking_id, members, juniors , adult_guests, child_guests )
+				VALUES (DATE_ADD('$start_date', INTERVAL $i DAY), '$booking_id','$num_members', '$num_juniors', '$num_guests', '$num_child_guests')";
 		$result = mysqli_query($conn, $insert);
 		if (isset($debug)) echo "<pre>" . $insert ."</pre>";
 		if (! $result )
 		{
-			echo mysqli_error();
+			echo mysqli_error($conn);
 			die( "Failed to add day ".$i. "  to the Database");
 		}
 	}
 
 	$query = "SELECT DATE_ADD(CURDATE(), INTERVAL 14 DAY) AS deposit_date, DATE_SUB('$start_date', INTERVAL 30 DAY) AS remainder_date";
 	$result = mysqli_query($conn, $query);
-	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error() ."</pre><hr>");
+	if (! $result ) die ("<hr>Database Error: <br><pre>". mysqli_error($conn) ."</pre><hr>");
 	$query_data = mysqli_fetch_array($result);
-	$deposit_date = $query_data['deposit_date'];	
-	$remainder_date = $query_data['remainder_date'];	
-	
+	$deposit_date = $query_data['deposit_date'];
+	$remainder_date = $query_data['remainder_date'];
+
 	$total_booked = $num_members + $num_juniors + $num_guests + $num_child_guests;
 
 	// Display the submitted values
 	echo "<h1>Edelweiss Booking Request</h1>";
-	
+
 	$mail_body  = "Booking Number $booking_id\n\n";
 	$mail_body .= "$m_first $m_last (Member ID $m_id)\n";
 	$mail_body .= "Booking for $start_date\n";
@@ -151,21 +163,38 @@ function AddBooking()
 	$mail_body .= sprintf("A deposit of \$%01.2f is due by %s\n", $total_cost * 0.30, $deposit_date);
 	$mail_body .= sprintf("The booking must be paid in full by %s (remainder is \$%01.2f)\n", $remainder_date, $total_cost * 0.70);
 
-	$mail_header  = "From: \"Edelweiss Bookings\"  <bookings@edelweiss-ski.club>\r\n";
-	if ($m_email != "") $mail_header  .= "Cc: \"$m_first $m_last\"  <$m_email>\r\n";
+	$mail_header = "From: \"Edelweiss Bookings\"  <bookings@edelweiss-ski.club>\r\n";
+	if ($m_email != "") {
+	    $mail_header  .= "Cc: \"$m_first $m_last\" <$m_email>\r\n";
+	}
 	$mail_header .= "Reply-to: bookings@edelweiss-ski.club\r\n";
 	$mail_header .= "Return-path: bookings@edelweiss-ski.club\r\n";
 
 	echo "<hr width='50%' align='left'><pre>$mail_body</pre>";
-	;
-	if ( mail("bookings@edelweiss-ski.club", "Booking for $m_first $m_last ($m_id)",$mail_body, $mail_header))
-	{
+
+    $postData = array();
+    //$postData['to'] = "bookings@edelweiss-ski.club";
+    $postData['to'] = "ben.incani@gmail.com";
+    $postData['from'] = "Edelweiss Bookings <bookings@edelweiss-ski.club>";
+    if ($m_email != "") {
+        $postData['cc'] = sprintf("%s %s <%s>", $m_first, $m_last, $m_email);
+    }
+    $postData['h:Reply-To'] = "bookings@edelweiss-ski.club";
+    $postData['h:Return-path'] = "bookings@edelweiss-ski.club";
+    $postData['subject'] = "Edelweiss Booking Request";
+    $postData['text'] = $mail_body;
+
+    $mailgun = new Mailgun($config->get('mailgun.key'));
+    //echo sprintf("post: <pre>%s</pre>", print_r($postData, true));
+    $sent = $mailgun->sendMessage($config->get('mailgun.domain'), $postData);
+
+	//if ( mail("bookings@edelweiss-ski.club", "Booking for $m_first $m_last ($m_id)", $mail_body, $mail_header))
+	if ($sent->{'http_response_code'} == 200) {
 		echo "<hr>An email has been sent to bookings@edelweiss-ski.club ";
 		if ($m_email != "") echo "and $m_email ";
 		echo "with the above infomation.<p>";
 	}
-	else
-	{
+	else {
 		echo "<hr>Unfortunatly sending email to bookings@edelweiss-ski.club or $m_email failed unexpectedly. The booking has still been accepted.<p>";
 	}
 }
@@ -197,7 +226,7 @@ function ShowForm()
 		<td>Member Name:</td>
 		<td><select name="member_id">
                     <<option value="0">Name of Member</option>"
-			<? for ($i = 0; $i < $row_count; $i++)
+			<?php for ($i = 0; $i < $row_count; $i++)
 				{
 					$m_id = mysqli_result($result, $i, "member_id");
 					$m_first = mysqli_result($result, $i, "first_name");
@@ -212,11 +241,11 @@ function ShowForm()
     <tr>
 		<td>Booking Start Date:</td>
 		<td><select name="date_day">
-			<? for ($i = 1; $i <= 31; $i++)
+			<?php for ($i = 1; $i <= 31; $i++)
 				echo "<option value=\"$i\">$i</option>";
 			?> </select>
 			<select name="date_month">
-			<? for ($i = 1; $i <= 12; $i++)
+			<?php for ($i = 1; $i <= 12; $i++)
 				echo "<option value=\"$i\">$i</option>";
 			?> </select>
 			<select name="date_year">
