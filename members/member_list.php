@@ -156,7 +156,10 @@ table thead tr th {
   <? } // end foreach ?>
   </tbody>
 </table>
-<a href="mailto:<?php echo implode(",", $emails); ?>">email all members</a>
+<!--
+<a href="mailto:<?php // echo implode(",", $emails); ?>">email all members</a>
+-->
+<a target="_blank" rel="noopener noreferrer" href="mailto:members@edelweiss-ski.club">email all members</a>
 
 <!--
 $i = 0;
