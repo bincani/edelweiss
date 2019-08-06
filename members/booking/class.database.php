@@ -1,9 +1,22 @@
 <?PHP
+require_once $_SERVER["DOCUMENT_ROOT"] . '/lib/Helpers/Config.class.php';
+require_once $_SERVER["DOCUMENT_ROOT"] . '/vendor/autoload.php';
+
+$configPath = $_SERVER["DOCUMENT_ROOT"] . '/config/.mail.php';
+
+use Helpers\Config;
+use Mailgun\Mailgun;
+
+$config = new Config;
+$config->load($configPath);
+
 	class Database
 	{
+	    global $config;
+
 		var $onError   = ""; // die, email, or nothing
-		var $errorTo   = "email@domain.com";
-		var $errorFrom = "errors@domain.com";
+		var $errorTo   = "ben.incani@edelweiss-ski.club";
+		var $errorFrom = "errors@edelweiss-ski.club";
 		var $errorPage = "database-error.php";
 
 		var $db;
@@ -20,10 +33,10 @@
 			$this->host     = $host;
 			$this->user     = $user;
 			$this->password = $password;
-			$this->dbname   = $dbname;			
+			$this->dbname   = $dbname;
 			$this->queries  = array();
 		}
-		
+
 		function connect()
 		{
 			$this->db = mysqli_connect($this->host, $this->user, $this->password) or $this->notify();
@@ -170,7 +183,7 @@
 		function notify()
 		{
 			global $auth;
-			
+
 			$err_msg = mysqli_error($this->db);
 			error_log($err_msg);
 
@@ -184,7 +197,7 @@
 					echo "</pre>";
 					die();
 					break;
-				
+
 				case "email":
 					$msg  = $_SERVER['PHP_SELF'] . " @ " . date("Y-m-d H:ia") . "\n";
 					$msg .= $err_msg . "\n\n";
@@ -192,7 +205,19 @@
 					$msg .= "CURRENT USER\n============\n"     . var_export($auth, true)  . "\n" . $_SERVER['REMOTE_ADDR'] . "\n\n";
 					$msg .= "POST VARIABLES\n==============\n" . var_export($_POST, true) . "\n\n";
 					$msg .= "GET VARIABLES\n=============\n"   . var_export($_GET, true)  . "\n\n";
-					mail($this->errorTo, $_SERVER['PHP_SELF'], $msg, "From: {$this->errorFrom}");
+
+                    $mailgun = new Mailgun($config->get('mailgun.key'));
+                    $postData = array(
+                        'subject' => sprintf("Edelweiss Website Error: %s", $_SERVER['PHP_SELF']),
+                        'text'    => $msg,
+                        'to'    => $this->errorTo,
+                        'from'  => $this->errorFrom
+                    );
+                    //mail($this->errorTo, $_SERVER['PHP_SELF'], $msg, "From: {$this->errorFrom}");
+                    $sent = $mailgun->sendMessage($config->get('mailgun.domain'), $postData);
+                	if ($sent->{'http_response_code'} == 200) {
+                	    // sent ok
+				    }
 					break;
 			}
 
@@ -200,7 +225,7 @@
 			{
 				header("Location: {$this->errorPage}");
 				exit();
-			}			
+			}
 		}
 	}
 ?>
