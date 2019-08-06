@@ -12,8 +12,6 @@ $config->load($configPath);
 
 	class Database
 	{
-	    global $config;
-
 		var $onError   = ""; // die, email, or nothing
 		var $errorTo   = "ben.incani@edelweiss-ski.club";
 		var $errorFrom = "errors@edelweiss-ski.club";
@@ -182,6 +180,7 @@ $config->load($configPath);
 
 		function notify()
 		{
+		    global $config;
 			global $auth;
 
 			$err_msg = mysqli_error($this->db);
