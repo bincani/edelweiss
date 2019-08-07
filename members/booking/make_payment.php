@@ -7,10 +7,11 @@ echo "<body>";
 
 function DisplayBookings()
 {
+    $bookingId = "";
     echo "<h1>Select a Booking</h1>\n";
     echo "<form action=\"make_payment.php\" method=\"post\">\n";
     echo "<table border=1>\n";
-    echo "<tr><td>Booking</td><td><input type=\"text\" name=\"booking\" maxlength=\"4\" size=\"4\" value=\"$booking\"/></td></tr>\n";
+    echo sprintf("<tr><td>Booking</td><td><input type=\"text\" name=\"booking\" maxlength=\"4\" size=\"4\" value=\"%s\"/></td></tr>\n", $bookingId);
     echo "<tr><td>&nbsp;</td><td><input type=\"submit\" name=\"select\" value=\"Select\" /></td></tr>\n";
 
     echo "</table></form>\n";
@@ -19,8 +20,9 @@ function DisplayBookings()
 
 function DisplayPaymentForm()
 {
-    echo "<h1>Enter Payment Details</h1\n";
     $booking_id = $_POST['booking'];
+    echo "<h1>Enter Payment Details</h1>";
+
 
     DisplayPayments($booking_id);
 
