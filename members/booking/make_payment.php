@@ -30,9 +30,9 @@ function DisplayPaymentForm()
     echo "<table border=1>\n";
     echo "<tr><td>Booking</td><td><input type=\"text\" name=\"booking\" maxlength=\"4\" size=\"4\" value=\"$booking_id\"/></td></tr>\n";
     echo "<tr><td>Date of Payment (year-month-day)</td><td>";
-    echo "<input type=\"text\" name=\"date_year\" maxlength=\"4\" size=\"4\" value=\"2009\"/> - ";
-    echo "<input type=\"text\" name=\"date_month\" maxlength=\"2\" size=\"2\" value=\"\"/> - ";
-    echo "<input type=\"text\" name=\"date_day\" maxlength=\"2\" size=\"2\" value=\"\"/>";
+    echo sprintf("<input type=\"text\" name=\"date_year\" maxlength=\"4\" size=\"4\" value=\"%s\"/> - ", date('Y'));
+    echo sprintf("<input type=\"text\" name=\"date_month\" maxlength=\"2\" size=\"2\" value=\"%s\"/> - ", date('m'));
+    echo sprintf("<input type=\"text\" name=\"date_day\" maxlength=\"2\" size=\"2\" value=\"%s\"/>", date('d'));
     echo "</td></tr>\n";
     echo "<tr><td>Amount $</td><td><input type=\"text\" name=\"amount\" maxlength=\"7\" size=\"7\" value=\"0.00\"/></td></tr>\n";
     echo "<tr><td>Type</td><td><select name=\"type\"/>";
