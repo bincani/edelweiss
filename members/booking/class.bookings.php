@@ -85,32 +85,44 @@ class Booking extends DBObject
     {
         global $db;
 
-        if (empty($year)) $year = date("Y");
+        // default to current year
+        if (empty($year)) {
+            $year = date("Y");
+        }
+        // 1st of Jan
         $year = $year ."0101";
         $booking = new Booking();
-        $db->query("SELECT `$booking->id_name` FROM " . $booking->table_name
-            ." WHERE `booking_date` >= DATE_SUB('$year', INTERVAL 1 YEAR) AND `booking_date` <= DATE_ADD('$year', INTERVAL 1 YEAR)");
-        if(mysqli_num_rows($db->result) == 0)
-            return false;
-        else
-        {
-            $row = mysqli_fetch_array($db->result, MYSQLI_ASSOC);
-            while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC))
-                $ids[] = $row[$booking->id_name];
+        // update with sort
+        $sql = sprintf(
+            //"SELECT eb.booking_id FROM edelweiss_booking eb WHERE `booking_date` >= DATE_SUB('%s', INTERVAL 1 YEAR) AND `booking_date` <= DATE_ADD('%s', INTERVAL 1 YEAR) order by booking_date",
+            "SELECT distinct eb.booking_id, min(date) FROM edelweiss_booking eb left join edelweiss_days ed on eb.booking_id = ed.booking_id WHERE `booking_date` >= DATE_SUB('%s', INTERVAL 1 YEAR) AND `booking_date` <= DATE_ADD('%s', INTERVAL 1 YEAR) group by eb.booking_id order by min(date)",
+            $year,
+            $year
+        );
+        //echo sprintf("sql: %s", $sql);
 
+        $db->query($sql);
+        if (mysqli_num_rows($db->result) == 0) {
+            return false;
+        }
+        else {
+            $bookingIds = array();
+            $row = mysqli_fetch_array($db->result, MYSQLI_ASSOC);
+            while ($row = mysqli_fetch_array($db->result, MYSQLI_ASSOC)) {
+                $bookingIds[] = $row[$booking->id_name];
+            }
             $year_date = strtotime($year . "-01-01");
             $bookings = array();
-            foreach ($ids as $key => $val)
-            {
-                $booking = new Booking($val);
-                if($days = $booking->days())
-                {
+            foreach ($bookingIds as $i => $bookingId) {
+                $booking = new Booking($bookingId);
+                if ($days = $booking->days()) {
                     $start_date = strtotime($days[0]->date);
-                    if ($start_date > $year_date )
+                    // check its current year
+                    if ($start_date > $year_date) {
                         $bookings[] = $booking;
+                    }
                 }
             }
-
             return $bookings;
         }
     }
