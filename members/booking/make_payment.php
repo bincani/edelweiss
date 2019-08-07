@@ -102,6 +102,7 @@ function ProcessPayment()
 
 function DisplayPayments($booking_id)
 {
+    $balance = 0;
     echo "<table border=1>\n";
     echo "<tr><td>Payments</td><td>Amount</td></tr>\n";
     $booking = new Booking($booking_id);

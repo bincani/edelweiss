@@ -25,7 +25,7 @@
 
 			foreach($columns as $key)
 				$this->columns[$key] = null;
-				
+
 			if($id != "")
 				$this->select($id);
 		}
@@ -48,7 +48,7 @@
 		function select($id, $column = "")
 		{
 			global $db;
-			
+
 			if($column == "") $column = $this->id_name;
 
 			$id = mysqli_real_escape_string($db->db, $id);
@@ -74,7 +74,7 @@
 		function insert($cmd = "INSERT INTO")
 		{
 			global $db;
-			
+
 			if(count($this->columns) > 0)
 			{
 				unset($this->columns[$this->id_name]);
@@ -98,21 +98,21 @@
 			foreach($this->quote_column_vals() as $key => $val)
 				$arrStuff[] = "`$key` = '$val'";
 			$stuff = implode(", ", $arrStuff);
-			
-			$id = mysqli_real_escape_string($this->id, $db->db);
-		
+
+			$id = mysqli_real_escape_string($db->db, $this->id);
+
 			$db->query("UPDATE " . $this->table_name . " SET $stuff WHERE " . $this->id_name . " = '" . $id . "'");
-			return mysql_affected_rows($db->db); // Not always correct due to mysql update bug/feature
+			return mysqli_affected_rows($db->db); // Not always correct due to mysql update bug/feature
 		}
 
 		function delete()
 		{
 			global $db;
-			$id = mysqli_real_escape_string($this->id, $db->db);
+			$id = mysqli_real_escape_string($db->db, $this->id);
 			$db->query("DELETE FROM " . $this->table_name . " WHERE `" . $this->id_name . "` = '" . $id . "'");
-			return mysql_affected_rows($db->db);
+			return mysqli_affected_rows($db->db);
 		}
-		
+
 		function postload() { $this->load($_POST); }
 		function getload()  { $this->load($_GET); }
 		function load($arr)
@@ -127,13 +127,14 @@
 			else
 				return false;
 		}
-		
+
 		function quote_column_vals()
 		{
 			global $db;
 			$columnVals = array();
-			foreach($this->columns  as $key => $val)
-				$columnVals[$key] = mysqli_real_escape_string($val, $db->db);
+			foreach($this->columns  as $key => $val) {
+				$columnVals[$key] = mysqli_real_escape_string($db->db, $val);
+			}
 			return $columnVals;
 		}
 	}
