@@ -7,6 +7,7 @@
 window.onload = function() {
   if (window.location.search) {
     var target = getUrlParameter('target');
+    console.log(target);
     document.getElementById('main').src = target + '.html';
   }
 };
