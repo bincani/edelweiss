@@ -130,6 +130,8 @@ class Booking extends DBObject
 
 class Days extends DBObject
 {
+    const SUMMER_MAX = 100;
+
     function __construct($id = "")
     {    // table        primary_key            column names                     [load record with this id]
         parent::__construct('edelweiss_days', 'day_id', array('date', 'booking_id', 'members', 'juniors', 'adult_guests', 'child_guests'), $id);
@@ -146,8 +148,9 @@ class Days extends DBObject
             $cost += $this->adult_guests * $rate->adult_guest;
             $cost += $this->child_guests * $rate->child_guest;
 
-            if (($rate->name == "Summer") && ($cost > 50.00))
-                $cost = 50.00;
+            if (($rate->name == "Summer") && ($cost > self::SUMMER_MAX )) {
+	        $cost = self::SUMMER_MAX;
+	    }
             return $cost;
         }
     }

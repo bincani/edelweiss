@@ -2,6 +2,8 @@
 
 require_once $_SERVER["DOCUMENT_ROOT"] . '/config/.mysql.php';
 
+define('SUMMER_MAX', 100); 
+
 //echo sprintf("%s|%s|%s|%s\n", $servername, $username, $password,$databasename);
 $conn = mysqli_connect($servername, $username, $password) or die("Cannot connect to database server");
 mysqli_select_db($conn, $databasename) or die("Unable to select database");
@@ -44,8 +46,8 @@ function getCost($date, $members, $juniors, $adult_guests, $child_guests)
 		$total = $members * $p_mem + $juniors * $p_junior + $adult_guests * $p_guest + $child_guests * $p_child;
 		if (isset($debug)) echo "<hr>Member Price = $p_mem<br>Junior Price = $p_junior<br>Guest Price = $p_guest<br>Child Price = $p_child<br>Total = $total<br>";
 
-		if (isSummer($date) && ($total > 50.00))
-			$total = 50.00;
+		if (isSummer($date) && ($total > SUMMER_MAX))
+			$total = SUMMER_MAX;
 	}
 	return $total;
 }
