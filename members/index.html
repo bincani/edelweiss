@@ -1,12 +1,28 @@
 <html>
 
 <head>
-<title>Edelweiss Ski Club</title>
+    <title>Edelweiss Ski Club</title>
+<script>
+
+window.onload = function() {
+  if (window.location.search) {
+    var target = getUrlParameter('target');
+    document.getElementById('main').src = target + '.html';
+  }
+};
+
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+};
+</script>
 </head>
 
 <frameset cols="176,*" FRAMEBORDER="0" BORDER="0">
-  <frame name="contents" target="main" src="menu.html">
-  <frame name="main" src="edelweiss_ski_club.html">
+  <frame id="menu" name="contents" target="main" src="menu.html">
+  <frame id="main" name="main" src="edelweiss_ski_club.html">
   <noframes>
   <body>
 
