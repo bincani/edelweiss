@@ -1,8 +1,26 @@
 <?php
+$years = array();
 $cYear = date('Y');
+$years[] = $cYear;
+
+//echo sprintf("daysLeftOfDate: %d<br/>", daysLeftOfDate());
+if (daysLeftOfDate() < 31) {
+    $nYear = date('Y', strtotime('+1 years'));
+    $years[] = $nYear;
+}
+
 $maxStayDays = 30;
 $maxMembers = 14;
-$maxJuniors = 13;
+$maxGuests = 13;
+
+function daysLeftOfDate($time = false, $inclusive = false) {
+    if (!$time) {
+        $time = strtotime("1st January " . date('Y', strtotime('+1 years')));
+    }
+    $timeLeft = $time - (($inclusive) ? time() : time() + (24 * 60 * 60));
+    $daysLeft = round((($timeLeft / 24) / 60) / 60);
+    return $daysLeft;
+}
 ?>
 <html>
 <head><title>Booking Form</title></head>
@@ -26,6 +44,7 @@ function AddBooking()
 {
     global $conn;
     global $config;
+    global $maxStayDays, $maxMembers, $maxGuests;
 
     // Extract the data submitted from the form
     $member_id = $_REQUEST['member_id'];
@@ -41,23 +60,30 @@ function AddBooking()
 
     // Validate user entered values
     if ($member_id == "0")
-	die ("The Member Name was not selected !");
+	    die ("The Member Name was not selected !");
     if ($num_juniors == "")
-	$num_juniors = 0;
+	    $num_juniors = 0;
     if ($num_guests == "")
-	$num_guests = 0;
+	    $num_guests = 0;
     if ($num_child_guests == "")
-	$num_child_guests = 0;
-    if ((!preg_match("/^[0-9]+$/", $length)) or ($length < 0) or ($length > $maxStayDays))
-        die ("Length ($length) of stay must be less than $maxStayDays days");
+	    $num_child_guests = 0;
+
+    if ((!preg_match("/^[0-9]+$/", $length)) or ($length < 0))
+        die ("Invalid number of nights '$length'. Please enter a number between 1 - $maxStayDays");
+    if ($length > $maxStayDays)
+        die ("Number of nights '$length' must be less than $maxStayDays days");
     if ((!preg_match("/^[0-9]+$/", $num_members)) or ($num_members < 0) or ($num_members > $maxMembers))
-	die ("Number of Members ($num_members) must be less than $maxMembers");
-    if ((!preg_match("/^[0-9]+$/", $num_juniors)) or ($num_juniors < 0) or ($num_juniors > 13))
-	die ("Number of Juniors ($num_juniors) must be less than 13");
-    if ((!preg_match("/^[0-9]+$/", $num_guests)) or ($num_guests < 0) or ($num_guests > 13))
-	die ("Number of Adult Guests ($num_guests) must be less than 13");
-    if ((!preg_match("/^[0-9]+$/", $num_child_guests)) or ($num_child_guests < 0) or ($num_child_guests > 13))
-	die ("Number of Child Guests ($num_child_guests) must be less than 13");
+	    die ("Number of Members ($num_members) must be less than $maxMembers");
+    if ((!preg_match("/^[0-9]+$/", $num_juniors)) or ($num_juniors < 0) or ($num_juniors > $maxGuests))
+	    die ("Number of Juniors ($num_juniors) must be less than $maxGuests");
+    if ((!preg_match("/^[0-9]+$/", $num_guests)) or ($num_guests < 0) or ($num_guests > $maxGuests))
+	    die ("Number of Adult Guests ($num_guests) must be less than $maxGuests");
+    if ((!preg_match("/^[0-9]+$/", $num_child_guests)) or ($num_child_guests < 0) or ($num_child_guests > $maxGuests))
+	    die ("Number of Child Guests ($num_child_guests) must be less than $maxGuests");
+    // make sure something was entered
+    if ($num_members <= 0 && $num_juniors <= 0 && $num_guests <= 0 && $num_child_guests <= 0) {
+        die ("Please enter a positive value for members and or guests");
+    }
 
     // Check the submitted values
     $query = "SELECT DISTINCT m.member_id, m.first_name, m.last_name
@@ -216,7 +242,8 @@ function AddBooking()
 
 function ShowForm()
 {
-        global $conn;
+    global $conn;
+    global $years;
     // Display the Form
     $query = "SELECT DISTINCT m.member_id, m.first_name, m.last_name
                 FROM edelweiss_members AS m
@@ -226,7 +253,7 @@ function ShowForm()
     $result = mysqli_query($conn, $query);
     $row_count = mysqli_num_rows($result);
     $length = "";
-    $num_members = "";
+    $num_members = 0;
     $num_juniors = "";
     $num_guests = "";
     $num_child_guests = "";
@@ -264,10 +291,10 @@ function ShowForm()
                 echo "<option value=\"$i\">$i</option>";
             ?> </select>
             <select name="date_year">
-	        <option value="2019">2019</option>
-                <option value="2010">2020</option>
-            </select>
-            </td>
+            <?php foreach ($years as $y)
+	            echo sprintf("<option value='%s'>%s</option>", $y, $y);
+            ?></select>
+        </td>
     </tr>
     <tr>
         <td>Number of Nights:</td>
