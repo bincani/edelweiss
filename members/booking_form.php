@@ -1,3 +1,26 @@
+<html>
+<head>
+    <title>Booking Form</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <style>
+    .rates {
+    }
+    </style>
+<script>
+$(document).ready(function() {
+    $("#date_year").change(function() {
+        var year = $( this ).val();
+        // load rates
+        //console.log('load rates: ' + year);        
+        $('#adult').text(rates[year]['adult']);
+        $('#junior').text(rates[year]['junior']);
+        $('#adult_guest').text(rates[year]['adult_guest']);
+        $('#child_guest').text(rates[year]['child_guest']);
+    });
+});    
+</script>
+</head>    
+<body>
 <?php
 $years = array();
 $cYear = date('Y');
@@ -21,11 +44,7 @@ function daysLeftOfDate($time = false, $inclusive = false) {
     $daysLeft = round((($timeLeft / 24) / 60) / 60);
     return $daysLeft;
 }
-?>
-<html>
-<head><title>Booking Form</title></head>
-<body>
-<?php
+
 // Set up the database connection and get a list of the members
 require_once( 'edelweiss.php' );
 
@@ -243,7 +262,7 @@ function AddBooking()
 function ShowForm()
 {
     global $conn;
-    global $years;
+    global $cYear, $years, $rates;
     // Display the Form
     $query = "SELECT DISTINCT m.member_id, m.first_name, m.last_name
                 FROM edelweiss_members AS m
@@ -290,7 +309,7 @@ function ShowForm()
             <?php for ($i = 1; $i <= 12; $i++)
                 echo "<option value=\"$i\">$i</option>";
             ?> </select>
-            <select name="date_year">
+            <select name="date_year" id="date_year">
             <?php foreach ($years as $y)
 	            echo sprintf("<option value='%s'>%s</option>", $y, $y);
             ?></select>
@@ -303,19 +322,19 @@ function ShowForm()
     <tr><td>&nbsp;</td></tr>
     <tr>
         <td>Number of Members :</td>
-        <td><input type="text" name="num_members" maxlength="2" size="2" value="<?php echo "$num_members" ?>" /> ($20)</td>
+        <td><input type="text" name="num_members" maxlength="2" size="2" value="<?php echo "$num_members" ?>" /> (<span class='rates adult' id='adult'><?php echo $rates[$cYear]['adult']; ?></span>)</td>
     </tr>
     <tr>
         <td>Number of Junior Members :</td>
-        <td><input type="text" name="num_juniors" maxlength="2" size="2" value="<?php echo "$num_juniors" ?>" /> ($10)</td>
+        <td><input type="text" name="num_juniors" maxlength="2" size="2" value="<?php echo "$num_juniors" ?>" /> (<span class='rates junior' id='junior'><?php echo $rates[$cYear]['junior']; ?></span>)</td>
     </tr>
     <tr>
         <td>Number of Guests :</td>
-        <td><input type="text" name="num_guests" maxlength="2" size="2" value="<?php echo "$num_guests" ?>" /> ($50)</td>
+        <td><input type="text" name="num_guests" maxlength="2" size="2" value="<?php echo "$num_guests" ?>" /> (<span class='rates adult_guest' id='adult_guest'><?php echo $rates[$cYear]['adult_guest']; ?></span>)</td>
     </tr>
     <tr>
         <td>Number of Child Guests :</td>
-        <td><input type="text" name="num_child_guests" maxlength="2" size="2" value="<?php echo "$num_child_guests" ?>" /> ($20)</td>
+        <td><input type="text" name="num_child_guests" maxlength="2" size="2" value="<?php echo "$num_child_guests" ?>" /> (<span class='rates child_guest' id='child_guest'><?php echo $rates[$cYear]['child_guest']; ?></span>)</td>
     </tr>
     <tr>
         <td align="center"><i>(To get the Summer Capped rate, please book all 14 beds)</i></td>
@@ -333,21 +352,31 @@ function ShowForm()
 <?php
 } // ShowForm
 
-if (isset($_POST['advanced']))
-{
-//    AdvancedForm();
+// load rates
+$rates = array();
+foreach ($years as $y) {
+    $query = sprintf("SELECT * FROM edelweiss_rates WHERE name = 'Winter' and start like '%s-%%'", $y);
+    //echo sprintf("query: %s<br/>", $query);
+    $result = mysqli_query($conn, $query);
+    $rates[$y] = mysqli_fetch_array($result);
+    //echo sprintf("<pre>data: %s</pre><br/>", print_r($rates[$y], true));
 }
-else if (isset($_POST['simple']))
-{
+?>
+<script>
+var rates = <?php echo json_encode($rates); ?>;
+//console.log(rates[2020]['adult']);
+</script>
+<?php
+if (isset($_POST['advanced'])) {
+    // AdvancedForm();
+}
+else if (isset($_POST['simple'])) {
     AddBooking();
 }
-else
-{
+else {
     ShowForm();
 }
-
 ?>
-
 </body>
 </html>
 
