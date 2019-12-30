@@ -4,6 +4,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <style>
     .rates {
+        font-weight: bold;
     }
     </style>
 <script>
@@ -12,10 +13,18 @@ $(document).ready(function() {
         var year = $( this ).val();
         // load rates
         //console.log('load rates: ' + year);        
-        $('#adult').text(rates[year]['adult']);
-        $('#junior').text(rates[year]['junior']);
-        $('#adult_guest').text(rates[year]['adult_guest']);
-        $('#child_guest').text(rates[year]['child_guest']);
+        if ($('#adult').text() != rates[year]['adult']) {
+            $('#adult').text(rates[year]['adult']).animate({opacity:0}).animate({opacity:1}); 
+        }
+        if ($('#junior').text() != rates[year]['junior']) {
+            $('#junior').text(rates[year]['junior']).animate({opacity:0}).animate({opacity:1}); 
+        }
+        if ($('#adult_guest').text() != rates[year]['adult_guest']) {
+            $('#adult_guest').text(rates[year]['adult_guest']).animate({opacity:0}).animate({opacity:1}); 
+        }
+        if ($('#child_guest').text() != rates[year]['child_guest']) {
+            $('#child_guest').text(rates[year]['child_guest']).animate({opacity:0}).animate({opacity:1});        
+        }
     });
 });    
 </script>
