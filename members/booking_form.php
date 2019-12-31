@@ -31,8 +31,12 @@ $(document).ready(function() {
 </head>    
 <body>
 <?php
+// set tz
+date_default_timezone_set("Australia/Melbourne");
+
 $years = array();
 $cYear = date('Y');
+//echo sprintf("cYear: %s [%s]", $cYear, date_default_timezone_get());
 $years[] = $cYear;
 
 //echo sprintf("daysLeftOfDate: %d<br/>", daysLeftOfDate());
@@ -319,8 +323,10 @@ function ShowForm()
                 echo "<option value=\"$i\">$i</option>";
             ?> </select>
             <select name="date_year" id="date_year">
-            <?php foreach ($years as $y)
-	            echo sprintf("<option value='%s'>%s</option>", $y, $y);
+            <?php foreach ($years as $y) {
+	            $selected = ($y == $cYear) ? "selected" : "";
+                echo sprintf("<option value='%s' %s>%s</option>", $y, $selected, $y);
+            }
             ?></select>
         </td>
     </tr>
