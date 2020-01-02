@@ -2,13 +2,27 @@
 
 <head>
     <title>Edelweiss Ski Club</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 <script>
 
 window.onload = function() {
   if (window.location.search) {
     var target = getUrlParameter('target');
-    console.log(target);
-    document.getElementById('main').src = target + '.html';
+    console.log("target: " + target);
+    if (target.lastIndexOf("?") >= 0) {
+        var qStr = target.split('?').pop();
+        var target = target.split('?')[0];
+        console.log("qStr: " + qStr);
+        console.log("target: " + target);
+    }
+    nTarget = target + '.html';
+    if (qStr !== 'undefined') {
+        nTarget += "?" + encodeURI(qStr); 
+    }
+    console.log("nTarget: " + nTarget);
+    document.getElementById('main').src = nTarget;
   }
 };
 
